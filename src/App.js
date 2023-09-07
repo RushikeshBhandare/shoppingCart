@@ -24,12 +24,21 @@ function App() {
   }
 
   return (
+      <div style={styles.rootContaner}>
     <Provider store={store}>
-      <div style={{flex: 1, display: 'flex'}}>
         <HomeScreen />
-      </div>
     </Provider>
+      </div>
   );
+}
+
+const styles = {
+  rootContaner: {
+    display: 'flex',
+    flex: 1,
+    backgroundColor: 'red',
+    height: '100vh'
+  }
 }
 
 

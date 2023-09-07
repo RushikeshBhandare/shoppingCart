@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { addQty, addToBasket, getAllProducts, removeQty } from '../../Store/Actions/cartActions'
+import { addQty, addToBasket, getAllProducts, getCartItems, removeQty } from '../../Store/Actions/cartActions'
 
 const HomeScreen = () => {
     const [productList, setProductList] = useState([])
     const [totalPrice, setTotalPrice] = useState({})
     const basketList = useSelector((state) => state?.cartReducer?.cart)
+    const [isLoading, setIsloading] = useState(true)
     const dispatch = useDispatch()
 
     useEffect(()=> {
@@ -32,9 +33,13 @@ const HomeScreen = () => {
 
     const getProducts = async () => {
         try {
+            setIsloading(true)
             const list  = await getAllProducts()
             setProductList(list)
+            await getCartItems(dispatch) 
+            setIsloading(false)
         }catch(e){
+            setIsloading(false)
             console.log("error ", e);
         }
     }
@@ -57,7 +62,7 @@ const HomeScreen = () => {
         return (
             <div style={styles.productItemContainer}>
                 <p style={styles.productItemName}>{item?.name}</p>
-                <p style={styles.productItemPrice}>${item?.price}</p>
+                <p style={styles.productItemPrice}>£{item?.price}</p>
                 <button disabled={isDisabled} onClick={() => onClickAdd(item)} style={!isDisabled ? styles.addBtn : styles.addBtnDisabled}>Add</button>
             </div>
         )
@@ -84,16 +89,16 @@ const HomeScreen = () => {
                     <p style={styles.productItemName}>{item?.name}</p>
                     <p style={styles.productItemName}>{item?.price}</p>
                     <div style={styles.basketItemBtnContainer}>
-                        <button onClick={() => onPressAdd(item)} style={styles.plusBtn}>+</button>
-                        <p style={styles.countText}>{item?.qty}</p>
                         <button onClick={() => onPressRemove(item)} style={styles.minusBtn}>-</button>
+                        <p style={styles.countText}>{item?.qty}</p>
+                        <button onClick={() => onPressAdd(item)} style={styles.plusBtn}>+</button>
                     </div>
                 </div>
-                <p style={styles.priceCalText}>Item price ${item?.price} * {item?.qty} = ${(item?.price * item?.qty)?.toFixed(2)}</p>
+                <p style={styles.priceCalText}>Item price £{item?.price} * {item?.qty} = £{(item?.price * item?.qty)?.toFixed(2)}</p>
                 {
-                    !!item?.saving && <p style={styles.savingText}>Saving ${item?.saving?.toFixed(2)}</p>
+                    !!item?.saving && <p style={styles.savingText}>Saving £{item?.saving?.toFixed(2)}</p>
                 }
-                <p style={styles.itemCost}>Item cost ${item?.itemCost?.toFixed(2)}</p>
+                <p style={styles.itemCost}>Item cost £{item?.itemCost?.toFixed(2)}</p>
             </div>
         )
     }
@@ -115,9 +120,26 @@ const HomeScreen = () => {
     const renderTotalAmount = () => {
         return (
             <div>
-                <p style={styles.productItemPrice}>Sub Total: {totalPrice?.subTotal?.toFixed(2)}</p>
-                <p style={styles.productItemPrice}>Savings: {totalPrice?.saving?.toFixed(2)}</p>
-                <p style={styles.productItemPrice}>Total Amount: {totalPrice?.totalAmount?.toFixed(2)}</p>
+                <div style={styles.totalContainer}>
+                    <p style={styles.productItemPrice}>Sub Total: </p>
+                    <p>  £ {totalPrice?.subTotal?.toFixed(2)}</p> 
+                </div>
+                <div style={styles.totalContainer}>
+                    <p style={styles.productItemPrice}>Savings:: </p>
+                    <p> £ {totalPrice?.saving?.toFixed(2)}</p> 
+                </div>
+                <div style={styles.totalContainer}>
+                    <p style={styles.productItemPrice}>Total Amount: </p>
+                    <p>  £ {totalPrice?.totalAmount?.toFixed(2)}</p> 
+                </div>
+            </div>
+        )
+    }
+
+    if (isLoading) {
+        return (
+            <div style={styles.rootContainer}>
+                loading...
             </div>
         )
     }
@@ -134,7 +156,9 @@ const styles = {
     rootContainer: {
         backgroundColor: '#c5ccd6',
         display: 'flex',
-        flex: 1
+        flex: 1,
+        flexWrap: 'wrap',
+        justifyContent: 'center'
     },
     titile: {
         fontSize: 24,
@@ -151,7 +175,7 @@ const styles = {
     productItemContainer: {
         display: 'flex',
         flexDirection: 'row',
-        width: 300,
+        width: 400,
         alignItems: 'center',
         borderBottom: "1px solid rgb(212, 212, 212)",
         padding: 10
@@ -163,7 +187,8 @@ const styles = {
     },
     productItemPrice: {
         fontSize: 18,
-        padding: 10
+        padding: 10,
+        flex: 1
     },
     addBtn: {
         backgroundColor: '#7ab0fa',
@@ -236,6 +261,11 @@ const styles = {
     },
     basketItem: {
         borderBottom: "1px solid rgb(212, 212, 212)"
+    },
+    totalContainer: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center'
     }
 }
 
