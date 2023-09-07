@@ -5,6 +5,7 @@ import store from './Store/store';
 import {  collection, getDocs } from 'firebase/firestore/lite';
 import { useEffect } from 'react';
 import db from './Helper/Firebase';
+import { Route, Routes } from 'react-router-dom';
 
 function App() {
   useEffect(()=> {
@@ -26,7 +27,9 @@ function App() {
   return (
       <div style={styles.rootContaner}>
     <Provider store={store}>
-        <HomeScreen />
+      <Routes>
+        <Route path="/" element={<HomeScreen />} />        
+      </Routes>  
     </Provider>
       </div>
   );
